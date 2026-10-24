@@ -4,6 +4,8 @@ import buttons from './components/Button.module.css'
 import { EmptyState } from './components/EmptyState'
 import type { Order } from './data/types'
 import { DetailsPanel } from './details/DetailsPanel'
+import { exportFileName, ordersToCsv } from './export/csv'
+import { downloadTextFile } from './export/download'
 import type { FieldKey } from './fields/fields'
 import { compileFilter } from './filter/compile'
 import { filterChips } from './filter/describe'
@@ -64,6 +66,15 @@ export function OrdersExplorer({ orders }: Props) {
   const chips = useMemo(() => filterChips(filter), [filter])
   const activeOrder = visible[active.row]
 
+  // The "200 rows" decision: the selection survives filter changes, but only selected rows that
+  // are visible count. This one list feeds both the on-screen count and the export, so they can
+  // never disagree. Rows hidden by the filter stay selected and come back when it is loosened.
+  const selectedVisible = useMemo(
+    () => visible.filter((order) => selection.has(order.id)),
+    [visible, selection],
+  )
+  const hiddenSelected = selection.size - selectedVisible.length
+
   const view = useMemo(
     () => ({ filter, sort, pinned, selection }),
     [filter, sort, pinned, selection],
@@ -101,6 +112,10 @@ export function OrdersExplorer({ orders }: Props) {
     anchorId.current = null
   }
 
+  function exportSelected() {
+    downloadTextFile(exportFileName(selectedVisible.length), ordersToCsv(selectedVisible))
+  }
+
   function closeDetails() {
     setDetailsOpen(false)
     viewportRef.current?.focus()
@@ -115,7 +130,16 @@ export function OrdersExplorer({ orders }: Props) {
         </span>
         <div className={styles.spacer} />
         <span className={styles.count} aria-live="polite">
-          {formatCount(selection.size)} selected
+          {formatCount(selectedVisible.length)} selected
+          {hiddenSelected > 0 && (
+            <span
+              className={styles.hidden}
+              title="Still selected, but hidden by the filter. Not included in the export."
+            >
+              {' '}
+              · {formatCount(hiddenSelected)} hidden by filter
+            </span>
+          )}
         </span>
         <button
           type="button"
@@ -124,6 +148,15 @@ export function OrdersExplorer({ orders }: Props) {
           disabled={selection.size === 0}
         >
           Clear selection
+        </button>
+        <button
+          type="button"
+          className={buttons.primary}
+          onClick={exportSelected}
+          disabled={selectedVisible.length === 0}
+        >
+          Export {formatCount(selectedVisible.length)}{' '}
+          {selectedVisible.length === 1 ? 'row' : 'rows'}
         </button>
       </header>
 

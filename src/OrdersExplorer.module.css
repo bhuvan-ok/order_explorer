@@ -62,3 +62,9 @@
 .count[data-updating='true'] {
   opacity: 0.5;
 }
+
+.hidden {
+  color: var(--color-text-muted);
+  text-decoration: underline dotted;
+  cursor: help;
+}
