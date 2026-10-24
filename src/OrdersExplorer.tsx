@@ -1,10 +1,14 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import buttons from './components/Button.module.css'
+import { EmptyState } from './components/EmptyState'
 import type { Order } from './data/types'
 import { DetailsPanel } from './details/DetailsPanel'
 import type { FieldKey } from './fields/fields'
 import { compileFilter } from './filter/compile'
+import { filterChips } from './filter/describe'
+import { removeCondition } from './filter/edit'
 import { EMPTY_FILTER, type Filter } from './filter/model'
+import { FilterChips } from './filter-builder/FilterChips'
 import { FilterPanel } from './filter-builder/FilterPanel'
 import { formatCount } from './format/format'
 import type { ActiveCell } from './grid/activeCell'
@@ -45,6 +49,7 @@ export function OrdersExplorer({ orders }: Props) {
     [sorted, predicate],
   )
   const isUpdating = filter !== deferredFilter
+  const chips = useMemo(() => filterChips(filter), [filter])
   const activeOrder = visible[active.row]
 
   // Keyboard users can start working straight away.
@@ -112,20 +117,30 @@ export function OrdersExplorer({ orders }: Props) {
           onOpenChange={setFiltersOpen}
         />
         <div className={styles.gridArea}>
-          <DataGrid
-            viewportRef={viewportRef}
-            orders={visible}
-            sort={sort}
-            onSortChange={changeSort}
-            pinned={pinned}
-            onPinnedChange={setPinned}
-            active={active}
-            onActiveChange={setActive}
-            selection={selection}
-            onSelectRow={selectRow}
-            onOpenDetails={() => setDetailsOpen(true)}
-            onCloseDetails={closeDetails}
+          <FilterChips
+            groups={chips}
+            onRemove={(id) => changeFilter(removeCondition(filter, id))}
+            onClearAll={() => changeFilter(EMPTY_FILTER)}
           />
+          <div className={styles.gridFrame}>
+            <DataGrid
+              viewportRef={viewportRef}
+              orders={visible}
+              sort={sort}
+              onSortChange={changeSort}
+              pinned={pinned}
+              onPinnedChange={setPinned}
+              active={active}
+              onActiveChange={setActive}
+              selection={selection}
+              onSelectRow={selectRow}
+              onOpenDetails={() => setDetailsOpen(true)}
+              onCloseDetails={closeDetails}
+            />
+            {visible.length === 0 && (
+              <EmptyState onClearFilters={() => changeFilter(EMPTY_FILTER)} />
+            )}
+          </div>
         </div>
         {detailsOpen && activeOrder && <DetailsPanel order={activeOrder} onClose={closeDetails} />}
       </main>

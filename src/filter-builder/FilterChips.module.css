@@ -1,0 +1,90 @@
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.plain,
+.group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+/* A bracket around OR-ed chips when there is more than one group, like ( a or b ) and c. */
+.group {
+  padding: 2px 4px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 14px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 320px;
+  height: 24px;
+  padding-left: 10px;
+  border: 1px solid var(--color-accent);
+  border-radius: 12px;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-hover);
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-left: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--color-selected-hover);
+}
+
+.or {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.and {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.clearAll {
+  margin-left: var(--space-1);
+  padding: 2px var(--space-1);
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.clearAll:hover {
+  background: var(--color-accent-soft);
+}
