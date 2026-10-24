@@ -121,7 +121,10 @@ export function DataGrid({
   }
 
   const rows = []
-  for (let index = start; index < end; index++) {
+  // The range is measured after layout, so right after the list shrinks (e.g. a stricter filter)
+  // it can still point past the end for one render: clamp it.
+  const last = Math.min(end, orders.length)
+  for (let index = start; index < last; index++) {
     const order = orders[index]
     rows.push(
       <GridRow

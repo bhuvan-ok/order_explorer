@@ -20,6 +20,11 @@ export type FieldType = 'text' | 'number' | 'date' | 'enum'
 export type EnumValue = string | number | null
 export type EnumOption = { value: EnumValue; label: string }
 
+/** String form of an enum value, used in filter state and the URL ("none" for a missing value). */
+export function optionKey(value: EnumValue): string {
+  return value === null ? 'none' : String(value)
+}
+
 /**
  * One entry per column. The grid, filter builder, chips and CSV export all read this list,
  * so a field's label, type, options and formatting are defined in exactly one place.

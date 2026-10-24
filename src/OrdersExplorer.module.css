@@ -48,3 +48,8 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
 }
+
+/* Dimmed for the moment the deferred filter pass is still catching up with the input. */
+.count[data-updating='true'] {
+  opacity: 0.5;
+}

@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import buttons from './components/Button.module.css'
 import type { Order } from './data/types'
 import { DetailsPanel } from './details/DetailsPanel'
 import type { FieldKey } from './fields/fields'
+import { compileFilter } from './filter/compile'
+import { EMPTY_FILTER, type Filter } from './filter/model'
+import { FilterPanel } from './filter-builder/FilterPanel'
 import { formatCount } from './format/format'
 import type { ActiveCell } from './grid/activeCell'
 import { DataGrid } from './grid/DataGrid'
@@ -24,12 +27,25 @@ export function OrdersExplorer({ orders }: Props) {
   const [active, setActive] = useState<ActiveCell>(FIRST_CELL)
   const [selection, setSelection] = useState<ReadonlySet<string>>(() => new Set())
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const [filter, setFilter] = useState<Filter>(EMPTY_FILTER)
+  const [filtersOpen, setFiltersOpen] = useState(true)
   // The row a Shift+click range starts from. Not rendered, so it does not need to be state.
   const anchorId = useRef<string | null>(null)
 
   // Sorting is the expensive step, so it only re-runs when the sort itself changes.
   const sorted = useMemo(() => sortOrders(orders, sort), [orders, sort])
-  const activeOrder = sorted[active.row]
+
+  // Inputs update immediately (urgent); the 50,000-row filter pass runs as a deferred update,
+  // so typing never waits for it. The filter is compiled once per change, then run per row.
+  // Filtering keeps the sorted order, so changing a filter never needs a re-sort.
+  const deferredFilter = useDeferredValue(filter)
+  const predicate = useMemo(() => compileFilter(deferredFilter), [deferredFilter])
+  const visible = useMemo(
+    () => (predicate ? sorted.filter(predicate) : sorted),
+    [sorted, predicate],
+  )
+  const isUpdating = filter !== deferredFilter
+  const activeOrder = visible[active.row]
 
   // Keyboard users can start working straight away.
   useEffect(() => viewportRef.current?.focus(), [])
@@ -39,13 +55,18 @@ export function OrdersExplorer({ orders }: Props) {
     setActive((cell) => ({ ...cell, row: 0 }))
   }
 
+  function changeFilter(next: Filter) {
+    setFilter(next)
+    setActive((cell) => ({ ...cell, row: 0 }))
+  }
+
   function selectRow(index: number, range: boolean) {
-    const order = sorted[index]
+    const order = visible[index]
     if (!order) return
     const anchorIndex =
-      range && anchorId.current ? sorted.findIndex((o) => o.id === anchorId.current) : -1
+      range && anchorId.current ? visible.findIndex((o) => o.id === anchorId.current) : -1
     if (anchorIndex !== -1) {
-      setSelection(selectRange(selection, sorted, anchorIndex, index))
+      setSelection(selectRange(selection, visible, anchorIndex, index))
       return
     }
     setSelection(toggleId(selection, order.id))
@@ -66,7 +87,9 @@ export function OrdersExplorer({ orders }: Props) {
     <div className={styles.screen}>
       <header className={styles.toolbar}>
         <h1 className={styles.title}>Orders Explorer</h1>
-        <span className={styles.count}>{formatCount(sorted.length)} orders</span>
+        <span className={styles.count} data-updating={isUpdating}>
+          {formatCount(visible.length)} of {formatCount(orders.length)} orders
+        </span>
         <div className={styles.spacer} />
         <span className={styles.count} aria-live="polite">
           {formatCount(selection.size)} selected
@@ -82,10 +105,16 @@ export function OrdersExplorer({ orders }: Props) {
       </header>
 
       <main className={styles.main}>
+        <FilterPanel
+          filter={filter}
+          onChange={changeFilter}
+          open={filtersOpen}
+          onOpenChange={setFiltersOpen}
+        />
         <div className={styles.gridArea}>
           <DataGrid
             viewportRef={viewportRef}
-            orders={sorted}
+            orders={visible}
             sort={sort}
             onSortChange={changeSort}
             pinned={pinned}
