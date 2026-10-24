@@ -4,6 +4,17 @@ An internal tool for an operations team: one screen with a data grid of ~50,000 
 
 > Work in progress. This README will be completed as the app is built.
 
+## How to run
+
+Requires **Node 24** (see `.nvmrc`) and npm.
+
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npm test           # unit tests
+npm run build      # type-check + production build
+```
+
 ## Design
 
 Low-fidelity sketches drawn before writing any UI code, in [`design/`](design/):

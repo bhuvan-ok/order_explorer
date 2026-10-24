@@ -1,0 +1,26 @@
+/* Design tokens: every colour, size and spacing value used by the components. */
+:root {
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-size: 13px;
+  --font-size-sm: 12px;
+  --font-size-lg: 15px;
+
+  --color-bg: #ffffff;
+  --color-surface: #f6f7f9;
+  --color-border: #e3e6eb;
+  --color-border-strong: #c8cdd5;
+  --color-text: #1c2230;
+  --color-text-muted: #667085;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4fd8;
+  --color-accent-soft: #e8effd;
+  --color-danger: #b42318;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+
+  --radius: 4px;
+}
