@@ -15,6 +15,9 @@
   --color-accent-hover: #1d4fd8;
   --color-accent-soft: #e8effd;
   --color-danger: #b42318;
+  --color-selected: #dde8fd;
+  --color-selected-hover: #d1e0fc;
+  --color-active-row: #f4f7fd;
 
   --space-1: 4px;
   --space-2: 8px;
