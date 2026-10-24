@@ -1,4 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { Banner } from './components/Banner'
 import buttons from './components/Button.module.css'
 import { EmptyState } from './components/EmptyState'
 import type { Order } from './data/types'
@@ -16,6 +17,8 @@ import { DataGrid } from './grid/DataGrid'
 import { selectRange, toggleId } from './grid/selection'
 import { sortOrders, type SortState } from './grid/sortOrders'
 import styles from './OrdersExplorer.module.css'
+import { parseViewState, type ParseResult } from './url/urlState'
+import { useUrlSync } from './url/useUrlSync'
 
 type Props = {
   orders: Order[]
@@ -23,15 +26,24 @@ type Props = {
 
 const FIRST_CELL: ActiveCell = { row: 0, col: 'id' }
 
+/** Reads filter, sort, pinned column and selection from the link the page was opened with. */
+function readLink(orders: Order[]): ParseResult {
+  const knownIds = new Set(orders.map((o) => o.id))
+  return parseViewState(window.location.search, knownIds)
+}
+
 /** The main screen, rendered once the orders have loaded. */
 export function OrdersExplorer({ orders }: Props) {
   const viewportRef = useRef<HTMLDivElement>(null)
-  const [sort, setSort] = useState<SortState | null>(null)
-  const [pinned, setPinned] = useState<FieldKey | null>('id')
+  // The link is read once, when the screen first appears; after that the URL only mirrors state.
+  const [link] = useState(() => readLink(orders))
+  const [linkErrors, setLinkErrors] = useState(link.errors)
+  const [sort, setSort] = useState<SortState | null>(link.view.sort)
+  const [pinned, setPinned] = useState<FieldKey | null>(link.view.pinned)
   const [active, setActive] = useState<ActiveCell>(FIRST_CELL)
-  const [selection, setSelection] = useState<ReadonlySet<string>>(() => new Set())
+  const [selection, setSelection] = useState<ReadonlySet<string>>(link.view.selection)
   const [detailsOpen, setDetailsOpen] = useState(false)
-  const [filter, setFilter] = useState<Filter>(EMPTY_FILTER)
+  const [filter, setFilter] = useState<Filter>(link.view.filter)
   const [filtersOpen, setFiltersOpen] = useState(true)
   // The row a Shift+click range starts from. Not rendered, so it does not need to be state.
   const anchorId = useRef<string | null>(null)
@@ -51,6 +63,12 @@ export function OrdersExplorer({ orders }: Props) {
   const isUpdating = filter !== deferredFilter
   const chips = useMemo(() => filterChips(filter), [filter])
   const activeOrder = visible[active.row]
+
+  const view = useMemo(
+    () => ({ filter, sort, pinned, selection }),
+    [filter, sort, pinned, selection],
+  )
+  useUrlSync(view)
 
   // Keyboard users can start working straight away.
   useEffect(() => viewportRef.current?.focus(), [])
@@ -108,6 +126,14 @@ export function OrdersExplorer({ orders }: Props) {
           Clear selection
         </button>
       </header>
+
+      {linkErrors.length > 0 && (
+        <Banner
+          title="This link had invalid settings, so the default view is shown."
+          details={linkErrors}
+          onDismiss={() => setLinkErrors([])}
+        />
+      )}
 
       <main className={styles.main}>
         <FilterPanel

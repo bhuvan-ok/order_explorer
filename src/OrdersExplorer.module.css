@@ -1,7 +1,7 @@
 .screen {
   height: 100%;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .toolbar {
@@ -30,6 +30,7 @@
 
 .main {
   /* min-width/min-height 0 let the grid scroll inside the screen instead of stretching it. */
+  flex: 1;
   min-height: 0;
   min-width: 0;
   display: flex;

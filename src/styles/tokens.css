@@ -18,6 +18,8 @@
   --color-selected: #dde8fd;
   --color-selected-hover: #d1e0fc;
   --color-active-row: #f4f7fd;
+  --color-warning-bg: #fff6dd;
+  --color-warning-border: #e9c46a;
 
   --space-1: 4px;
   --space-2: 8px;
