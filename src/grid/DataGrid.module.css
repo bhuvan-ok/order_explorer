@@ -1,0 +1,175 @@
+.viewport {
+  /* Must match ROW_HEIGHT and HEADER_HEIGHT in layout.ts (used for the virtualization maths). */
+  --row-height: 28px;
+  --header-height: 32px;
+  position: relative;
+  height: 100%;
+  overflow: auto;
+  background: var(--color-bg);
+}
+
+/* ---------- header ---------- */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  width: var(--grid-width);
+  height: var(--header-height);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.headerCell {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+}
+
+.sortButton {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  border: 0;
+  background: none;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.headerCell.right .sortButton {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.sortButton:hover {
+  background: var(--color-border);
+}
+
+.headerLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sortIcon {
+  font-size: 9px;
+  color: var(--color-accent);
+}
+
+/* Overlays the label on hover instead of taking space, so labels are not cut short. */
+.pinButton {
+  position: absolute;
+  top: 5px;
+  right: var(--space-1);
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  opacity: 0;
+}
+
+.headerCell.right .pinButton {
+  right: auto;
+  left: var(--space-1);
+}
+
+.headerCell.pinned .sortButton {
+  padding-right: 30px;
+}
+
+.headerCell:hover .pinButton,
+.pinButton:focus-visible,
+.pinButton[aria-pressed='true'] {
+  opacity: 1;
+}
+
+.pinButton[aria-pressed='true'] {
+  color: var(--color-accent);
+}
+
+.pinButton:hover {
+  background: var(--color-border);
+}
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  z-index: 1;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.resizeHandle:hover {
+  background: var(--color-accent);
+}
+
+/* ---------- body ---------- */
+
+.body {
+  position: relative;
+  width: var(--grid-width);
+}
+
+.row {
+  position: absolute;
+  left: 0;
+  display: flex;
+  width: var(--grid-width);
+  height: var(--row-height);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.row:hover {
+  background: var(--color-surface);
+}
+
+.cell {
+  flex: none;
+  padding: 0 var(--space-2);
+  line-height: calc(var(--row-height) - 1px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: inherit;
+}
+
+.right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.empty {
+  color: var(--color-text-muted);
+}
+
+/* ---------- pinned column ---------- */
+
+.pinned {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  border-right: 2px solid var(--color-border-strong);
+}
+
+.headerCell.pinned {
+  z-index: 3;
+}

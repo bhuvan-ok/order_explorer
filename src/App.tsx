@@ -1,6 +1,7 @@
 import buttons from './components/Button.module.css'
 import { StatusScreen } from './components/StatusScreen'
 import { useOrders } from './data/useOrders'
+import { OrdersExplorer } from './OrdersExplorer'
 
 export default function App() {
   const { state, retry } = useOrders()
@@ -20,5 +21,5 @@ export default function App() {
     )
   }
 
-  return <StatusScreen title={`${state.orders.length.toLocaleString('en-IN')} orders loaded`} />
+  return <OrdersExplorer orders={state.orders} />
 }
