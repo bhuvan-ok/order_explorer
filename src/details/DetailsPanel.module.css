@@ -1,10 +1,25 @@
+/* Slides open by animating its width; the content keeps a fixed width so it doesn't reflow. */
 .panel {
-  width: 360px;
+  width: 0;
   flex: none;
+  overflow: hidden;
+  border-left: 0 solid var(--color-border-strong);
+  background: var(--color-bg);
+  transition:
+    width var(--panel-transition),
+    border-width var(--panel-transition);
+}
+
+.open {
+  width: 360px;
+  border-left-width: 1px;
+}
+
+.content {
+  width: 360px;
+  height: 100%;
   overflow-y: auto;
   padding: var(--space-3) var(--space-4) var(--space-4);
-  border-left: 1px solid var(--color-border-strong);
-  background: var(--color-bg);
 }
 
 .header {

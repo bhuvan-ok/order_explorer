@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { nextActiveCell } from './activeCell'
-import { selectRange, toggleId } from './selection'
+import { extendSelection, selectRange, toggleId } from './selection'
 
 describe('toggleId', () => {
   it('adds and removes an id without changing the input', () => {
@@ -22,6 +22,22 @@ describe('selectRange', () => {
 
   it('keeps rows that were already selected', () => {
     expect([...selectRange(new Set(['E']), rows, 0, 1)].sort()).toEqual(['A', 'B', 'E'])
+  })
+})
+
+describe('extendSelection', () => {
+  const rows = ['A', 'B', 'C', 'D', 'E'].map((id) => ({ id }))
+
+  it('selects from the anchor to the focused row', () => {
+    const result = extendSelection(new Set(['B']), rows, 'B', 3, 4)
+    expect([...result.selection].sort()).toEqual(['B', 'C', 'D', 'E'])
+    expect(result.anchorId).toBe('B')
+  })
+
+  it('starts from the previous focused row when there is no anchor', () => {
+    const result = extendSelection(new Set(), rows, null, 1, 2)
+    expect([...result.selection].sort()).toEqual(['B', 'C'])
+    expect(result.anchorId).toBe('B')
   })
 })
 

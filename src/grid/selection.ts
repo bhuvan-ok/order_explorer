@@ -21,3 +21,20 @@ export function selectRange(
   for (let i = start; i <= end; i++) next.add(rows[i].id)
   return next
 }
+
+/**
+ * Shift+↑/↓: select every row from the anchor (the last clicked or Space-toggled row) to the
+ * newly focused row. With no anchor visible, the range starts at the row focus moved from,
+ * which becomes the new anchor.
+ */
+export function extendSelection(
+  selection: ReadonlySet<string>,
+  rows: readonly { id: string }[],
+  anchorId: string | null,
+  fromIndex: number,
+  toIndex: number,
+): { selection: Set<string>; anchorId: string } {
+  const anchorIndex = anchorId ? rows.findIndex((row) => row.id === anchorId) : -1
+  const start = anchorIndex !== -1 ? anchorIndex : fromIndex
+  return { selection: selectRange(selection, rows, start, toIndex), anchorId: rows[start].id }
+}

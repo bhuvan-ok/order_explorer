@@ -2,6 +2,8 @@
 
 An internal tool for an operations team: one screen with a data grid of 50,000 orders and a filter builder that controls what the grid shows. Built for 13" laptops and keyboard use.
 
+**Live demo:** https://bhuvan-ok-orderexplorer.vercel.app
+
 ## Tech stack
 
 - **React 19 + TypeScript + Vite**
@@ -85,6 +87,14 @@ The sketches are in [`design/`](design/). Changes made while building:
 - **The pin button appears when hovering a column header,** so header labels aren't cut short.
 - **The toolbar also shows how many selected rows a filter is hiding.**
 
+## 7. Known issues
+
+- **Column resize** works with the mouse only, and widths reset on reload.
+- **Selection:** there is no "select all", and double-clicking a row to open details also toggles its selection on and back off.
+- **Long URLs:** large, scattered selections make the URL long.
+- **Layout:** made for laptop screens, with no mobile layout. With both side panels open the grid gets narrow; the filter panel can be collapsed.
+- **Browsers:** tested in Chrome/Edge only.
+
 ## Key decisions
 
 - **Virtual scrolling.** Every row is 28 px tall, so the grid works out from the scroll position which rows are on screen. It renders only those (about 30) plus a few extra, and a tall empty spacer keeps the scrollbar the right size.
@@ -92,18 +102,10 @@ The sketches are in [`design/`](design/). Changes made while building:
 - **Filters.** They sit in a left sidebar, so the grid stays visible while filtering. The filter is groups of conditions: OR inside a group, AND between groups. Each change turns it into a single check function that runs once per row.
 - **Smooth typing.** The input updates at once. The filtering runs right after it, using React's `useDeferredValue`. Rows are sorted first and then filtered, so changing a filter never re-sorts.
 - **Keyboard.** Focus stays on the grid itself, and the focused cell is tracked in state. Focus therefore isn't lost when rows scroll out of view and are removed.
-- **Selection.** It is stored as a set of order IDs, so it survives sorting and filtering. Click and Space toggle a row, and Shift+click selects a range.
+- **Selection.** It is stored as a set of order IDs, so it survives sorting and filtering. Click and Space toggle a row, and Shift+click or Shift+↑/↓ selects a range.
 - **URL.** Filter, sort, pinned column and selection are written to the URL. When the page opens, the URL is read and checked; if anything is invalid, a message shows and the default view opens instead of crashing.
-- **Details panel.** It opens beside the grid instead of over it, and follows the focused row (↑ ↓).
+- **Details panel.** It slides open beside the grid instead of over it, and follows the focused row (↑ ↓). The panel and the filter sidebar animate their width, and open instantly when the system's "reduce motion" setting is on.
 - **Dates.** They are shown and filtered in UTC, so everyone opening the same link sees the same results.
-
-## 7. Known issues
-
-- **Column resize** works with the mouse only, and widths reset on reload.
-- **Selection:** range selection is Shift+click only, there is no "select all", and double-clicking a row to open details also toggles its selection on and back off.
-- **Long URLs:** large, scattered selections make the URL long.
-- **Layout:** made for laptop screens, with no mobile layout. With both side panels open the grid gets narrow; the filter panel can be collapsed.
-- **Browsers:** tested in Chrome/Edge only.
 
 ## Project structure
 
@@ -111,6 +113,7 @@ The sketches are in [`design/`](design/). Changes made while building:
 src/
   data/            load and clean orders.json
   fields/          the 13 columns: label, type, width, formatting
+  format/          ₹ amount, count and UTC date formatting
   grid/            grid, virtual scrolling, sorting, selection, keyboard
   filter/          filter logic and chip text
   filter-builder/  filter sidebar and chips
@@ -118,4 +121,5 @@ src/
   url/             saving the view in the URL
   export/          CSV export
   components/      small shared pieces
+  styles/          colour and spacing variables, base styles
 ```

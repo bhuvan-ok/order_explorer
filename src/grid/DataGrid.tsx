@@ -23,6 +23,9 @@ import { nextSort, type SortState } from './sortOrders'
 import { useColumnWidths } from './useColumnWidths'
 import { useVirtualRange } from './useVirtualRange'
 
+/** Keys that extend the selection when Shift is held (the keyboard version of Shift+click). */
+const RANGE_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'])
+
 type Props = {
   viewportRef: RefObject<HTMLDivElement | null>
   orders: Order[]
@@ -35,6 +38,8 @@ type Props = {
   selection: ReadonlySet<string>
   /** Click / Space on a row; `range` is true for Shift+click. */
   onSelectRow: (index: number, range: boolean) => void
+  /** Shift+↑/↓ (or Shift+PageUp/PageDown): focus moved from one row to another. */
+  onExtendSelection: (fromIndex: number, toIndex: number) => void
   onOpenDetails: () => void
   onCloseDetails: () => void
 }
@@ -58,6 +63,7 @@ export function DataGrid({
   onActiveChange,
   selection,
   onSelectRow,
+  onExtendSelection,
   onOpenDetails,
   onCloseDetails,
 }: Props) {
@@ -67,7 +73,7 @@ export function DataGrid({
   const columnKeys = useMemo(() => columns.map((c) => c.key), [columns])
   const { start, end } = useVirtualRange(viewportRef, orders.length)
 
-  // A new sort (or later, filter) produces a new list: start again from the first row.
+  // A new sort or filter produces a new list: start again from the first row.
   useEffect(() => {
     if (viewportRef.current) viewportRef.current.scrollTop = 0
   }, [viewportRef, orders])
@@ -108,6 +114,7 @@ export function DataGrid({
     event.preventDefault()
     onActiveChange(next)
     scrollCellIntoView(viewport, next, columns, widths, pinned)
+    if (event.shiftKey && RANGE_KEYS.has(event.key)) onExtendSelection(active.row, next.row)
   }
 
   // One click handler for all rows (event delegation) keeps the memoized rows prop-free.

@@ -34,4 +34,13 @@
   --space-6: 24px;
 
   --radius: 4px;
+
+  --panel-transition: 180ms ease-out;
+}
+
+/* Respect the system "reduce motion" setting: panels open and close instantly. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --panel-transition: 0s;
+  }
 }

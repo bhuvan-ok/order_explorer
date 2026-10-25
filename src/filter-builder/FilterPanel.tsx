@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useRef, useState } from 'react'
 import buttons from '../components/Button.module.css'
 import {
   addCondition,
@@ -28,93 +28,106 @@ export function FilterPanel({ filter, onChange, open, onOpenChange }: Props) {
   const [focusId, setFocusId] = useState<string | null>(null)
   const conditionCount = filter.groups.reduce((n, g) => n + g.conditions.length, 0)
 
-  if (!open) {
-    return (
-      <aside className={styles.rail} aria-label="Filters">
-        <button
-          type="button"
-          className={styles.railButton}
-          aria-expanded="false"
-          aria-label="Show filters"
-          title="Show filters"
-          onClick={() => onOpenChange(true)}
-        >
-          <span aria-hidden="true">»</span>
-          <span className={styles.railLabel}>
-            Filters{conditionCount > 0 && ` (${conditionCount})`}
-          </span>
-        </button>
-      </aside>
-    )
-  }
+  const showButton = useRef<HTMLButtonElement>(null)
+  const hideButton = useRef<HTMLButtonElement>(null)
 
   function add(result: { filter: Filter; condition: Condition }) {
     onChange(result.filter)
     setFocusId(result.condition.id)
   }
 
+  // Keep keyboard focus on the button that now toggles the sidebar back.
+  function toggle(next: boolean) {
+    onOpenChange(next)
+    requestAnimationFrame(() => (next ? hideButton : showButton).current?.focus())
+  }
+
   return (
-    <aside className={styles.panel} aria-label="Filters">
-      <div className={styles.panelHeader}>
-        <h2 className={styles.panelTitle}>Filters</h2>
-        <button
-          type="button"
-          className={styles.iconButton}
-          aria-expanded="true"
-          aria-label="Hide filters"
-          title="Hide filters"
-          onClick={() => onOpenChange(false)}
-        >
-          «
-        </button>
-      </div>
+    // The sidebar stays mounted and slides between full width and a thin rail. The hidden part
+    // is `inert`, so it cannot be focused or tabbed into.
+    <aside
+      className={open ? `${styles.sidebar} ${styles.sidebarOpen}` : styles.sidebar}
+      aria-label="Filters"
+    >
+      <button
+        ref={showButton}
+        type="button"
+        className={styles.railButton}
+        aria-expanded="false"
+        aria-label="Show filters"
+        title="Show filters"
+        inert={open}
+        onClick={() => toggle(true)}
+      >
+        <span aria-hidden="true">»</span>
+        <span className={styles.railLabel}>
+          Filters{conditionCount > 0 && ` (${conditionCount})`}
+        </span>
+      </button>
 
-      {filter.groups.length === 0 && (
-        <p className={styles.note}>No filters yet, so every order is shown.</p>
-      )}
+      <div className={styles.panel} inert={!open}>
+        <div className={styles.panelHeader}>
+          <h2 className={styles.panelTitle}>Filters</h2>
+          <button
+            ref={hideButton}
+            type="button"
+            className={styles.iconButton}
+            aria-expanded="true"
+            aria-label="Hide filters"
+            title="Hide filters"
+            onClick={() => toggle(false)}
+          >
+            «
+          </button>
+        </div>
 
-      {filter.groups.map((group, groupIndex) => (
-        <Fragment key={group.id}>
-          {groupIndex > 0 && <div className={styles.and}>and</div>}
-          <section className={styles.group} aria-label={`Group ${groupIndex + 1}`}>
-            <div className={styles.groupHeader}>
-              <span>
-                Group {groupIndex + 1} · matches <strong>any</strong> of
-              </span>
+        {filter.groups.length === 0 && (
+          <p className={styles.note}>No filters yet, so every order is shown.</p>
+        )}
+
+        {filter.groups.map((group, groupIndex) => (
+          <Fragment key={group.id}>
+            {groupIndex > 0 && <div className={styles.and}>and</div>}
+            <section className={styles.group} aria-label={`Group ${groupIndex + 1}`}>
+              <div className={styles.groupHeader}>
+                <span>
+                  Group {groupIndex + 1} · matches <strong>any</strong> of
+                </span>
+                <button
+                  type="button"
+                  className={styles.textButton}
+                  onClick={() => onChange(removeGroup(filter, group.id))}
+                >
+                  Remove group
+                </button>
+              </div>
+              {group.conditions.map((condition, conditionIndex) => (
+                <Fragment key={condition.id}>
+                  {conditionIndex > 0 && <div className={styles.or}>or</div>}
+                  <ConditionEditor
+                    condition={condition}
+                    autoFocus={condition.id === focusId}
+                    onChange={(change) => onChange(updateCondition(filter, condition.id, change))}
+                    onFieldChange={(field) => onChange(changeField(filter, condition.id, field))}
+                    onRemove={() => onChange(removeCondition(filter, condition.id))}
+                  />
+                </Fragment>
+              ))}
               <button
                 type="button"
                 className={styles.textButton}
-                onClick={() => onChange(removeGroup(filter, group.id))}
+                onClick={() => add(addCondition(filter, group.id))}
               >
-                Remove group
+                + Add condition (or)
               </button>
-            </div>
-            {group.conditions.map((condition, conditionIndex) => (
-              <Fragment key={condition.id}>
-                {conditionIndex > 0 && <div className={styles.or}>or</div>}
-                <ConditionEditor
-                  condition={condition}
-                  autoFocus={condition.id === focusId}
-                  onChange={(change) => onChange(updateCondition(filter, condition.id, change))}
-                  onFieldChange={(field) => onChange(changeField(filter, condition.id, field))}
-                  onRemove={() => onChange(removeCondition(filter, condition.id))}
-                />
-              </Fragment>
-            ))}
-            <button
-              type="button"
-              className={styles.textButton}
-              onClick={() => add(addCondition(filter, group.id))}
-            >
-              + Add condition (or)
-            </button>
-          </section>
-        </Fragment>
-      ))}
+            </section>
+          </Fragment>
+        ))}
 
-      <button type="button" className={buttons.button} onClick={() => add(addGroup(filter))}>
-        {filter.groups.length === 0 ? '+ Add filter' : '+ Add group (and)'}
-      </button>
+        <button type="button" className={buttons.button} onClick={() => add(addGroup(filter))}>
+          {filter.groups.length === 0 ? '+ Add filter' : '+ Add group (and)'}
+        </button>
+      </div>
     </aside>
   )
 }

@@ -16,7 +16,7 @@ import { FilterPanel } from './filter-builder/FilterPanel'
 import { formatCount } from './format/format'
 import type { ActiveCell } from './grid/activeCell'
 import { DataGrid } from './grid/DataGrid'
-import { selectRange, toggleId } from './grid/selection'
+import { extendSelection, selectRange, toggleId } from './grid/selection'
 import { sortOrders, type SortState } from './grid/sortOrders'
 import styles from './OrdersExplorer.module.css'
 import { parseViewState, type ParseResult } from './url/urlState'
@@ -107,6 +107,12 @@ export function OrdersExplorer({ orders }: Props) {
     anchorId.current = order.id
   }
 
+  function extendRowSelection(fromIndex: number, toIndex: number) {
+    const result = extendSelection(selection, visible, anchorId.current, fromIndex, toIndex)
+    setSelection(result.selection)
+    anchorId.current = result.anchorId
+  }
+
   function clearSelection() {
     setSelection(new Set())
     anchorId.current = null
@@ -193,6 +199,7 @@ export function OrdersExplorer({ orders }: Props) {
               onActiveChange={setActive}
               selection={selection}
               onSelectRow={selectRow}
+              onExtendSelection={extendRowSelection}
               onOpenDetails={() => setDetailsOpen(true)}
               onCloseDetails={closeDetails}
             />
@@ -201,13 +208,17 @@ export function OrdersExplorer({ orders }: Props) {
             )}
           </div>
         </div>
-        {detailsOpen && activeOrder && <DetailsPanel order={activeOrder} onClose={closeDetails} />}
+        <DetailsPanel
+          order={activeOrder}
+          open={detailsOpen && activeOrder !== undefined}
+          onClose={closeDetails}
+        />
       </main>
 
       <footer className={styles.hints}>
         <span>↑ ↓ ← → move</span>
         <span>Click / Space select</span>
-        <span>Shift+click select range</span>
+        <span>Shift+click / Shift+↑↓ select range</span>
         <span>Enter details</span>
         <span>Esc close</span>
       </footer>
