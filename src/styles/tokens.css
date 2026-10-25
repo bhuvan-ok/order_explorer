@@ -21,6 +21,12 @@
   --color-warning-bg: #fff6dd;
   --color-warning-border: #e9c46a;
 
+  --color-status-pending: #d97706;
+  --color-status-processing: #2563eb;
+  --color-status-shipped: #7c3aed;
+  --color-status-delivered: #16a34a;
+  --color-status-cancelled: #9ca3af;
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;

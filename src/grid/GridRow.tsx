@@ -53,6 +53,8 @@ export const GridRow = memo(function GridRow({
             id={isActive ? `${cellIdPrefix}-${index}-${column.key}` : undefined}
             role="gridcell"
             data-col={column.key}
+            // Drives the coloured status dot (CSS only), which makes the column quick to scan.
+            data-status={column.key === 'status' ? order.status : undefined}
             className={classes.join(' ')}
             style={{ width: columnWidth(column.key) }}
             // Native tooltip shows the full value of text that is cut short.

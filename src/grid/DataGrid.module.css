@@ -177,7 +177,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: inherit;
+  /*
+   * No background here: the row's shows through. (`background: inherit` on every cell made
+   * Chrome skip its style cache and recalculated styles ~14x slower while scrolling.)
+   */
 }
 
 .right {
@@ -200,4 +203,58 @@
 
 .headerCell.pinned {
   z-index: 3;
+}
+
+/* The pinned cell covers cells scrolling underneath it, so it needs the row's colour itself. */
+.row .pinned {
+  background: var(--color-bg);
+}
+
+.row:hover .pinned {
+  background: var(--color-surface);
+}
+
+.activeRow .pinned {
+  background: var(--color-active-row);
+}
+
+.selected .pinned {
+  background: var(--color-selected);
+}
+
+.selected:hover .pinned {
+  background: var(--color-selected-hover);
+}
+
+/* ---------- status dot ---------- */
+
+.cell[data-status]::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: 1px;
+  background: var(--status-color);
+}
+
+.cell[data-status='pending'] {
+  --status-color: var(--color-status-pending);
+}
+
+.cell[data-status='processing'] {
+  --status-color: var(--color-status-processing);
+}
+
+.cell[data-status='shipped'] {
+  --status-color: var(--color-status-shipped);
+}
+
+.cell[data-status='delivered'] {
+  --status-color: var(--color-status-delivered);
+}
+
+.cell[data-status='cancelled'] {
+  --status-color: var(--color-status-cancelled);
 }

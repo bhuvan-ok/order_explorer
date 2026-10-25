@@ -1,0 +1,7 @@
+# Keep LF line endings on every OS (Prettier expects LF; Git on Windows would convert to CRLF).
+* text=auto eol=lf
+
+# Never convert the data file: it must stay byte-for-byte identical to the original.
+public/orders.json -text
+
+*.png binary
